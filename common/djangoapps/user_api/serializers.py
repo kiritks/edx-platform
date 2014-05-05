@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from student.models import UserProfile
 from user_api.models import UserPreference
-
+from django_comment_common.models import Role
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     name = serializers.SerializerMethodField("get_name")
@@ -28,3 +28,4 @@ class UserPreferenceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserPreference
         depth = 1
+

@@ -8,11 +8,13 @@ from student.tests.factories import UserFactory
 from unittest import SkipTest
 from user_api.models import UserPreference
 from user_api.tests.factories import UserPreferenceFactory
+from django_comment_common.models import Role
 
 
 TEST_API_KEY = "test_api_key"
 USER_LIST_URI = "/user_api/v1/users/"
 USER_PREFERENCE_LIST_URI = "/user_api/v1/user_prefs/"
+ROLE_LIST_URI = "/user_api/v1/forum_roles/{name}/users/"
 
 
 @override_settings(EDX_API_KEY=TEST_API_KEY)
@@ -104,6 +106,24 @@ class EmptyUserTestCase(ApiTestCase):
         self.assertEqual(result["results"], [])
 
 
+class EmptyRoleTestCase(ApiTestCase):
+    """
+    Test that the endpoint supports empty result sets
+    """
+    course_id = "org/course/run"
+    LIST_URI = ROLE_LIST_URI.format(name="Moderator") + "?course_id=" + course_id
+
+    def test_get_list_empty(self):
+        """
+        Test that the endpoint properly returns empty result sets
+        """
+        result = self.get_json(self.LIST_URI)
+        self.assertEqual(result["count"], 0)
+        self.assertIsNone(result["next"])
+        self.assertIsNone(result["previous"])
+        self.assertEqual(result["results"], [])
+
+
 class UserApiTestCase(ApiTestCase):
     def setUp(self):
         super(UserApiTestCase, self).setUp()
@@ -119,6 +139,94 @@ class UserApiTestCase(ApiTestCase):
             UserPreferenceFactory.create(user=self.users[0], key="key1"),
             UserPreferenceFactory.create(user=self.users[1], key="key0")
         ]
+
+
+class RoleTestCase(UserApiTestCase):
+    """
+    Test the forum_roles endpoint
+    """
+    course_id = "org/course/run"
+    LIST_URI = ROLE_LIST_URI.format(name="Moderator") + "?course_id=" + course_id
+
+    def setUp(self):
+        """
+        Defer setup to parent constructor
+        """
+        super(RoleTestCase, self).setUp()
+
+    def test_options_list(self):
+        """
+        Allow GET/HEAD/OPTIONS requests
+        """
+        self.assertAllowedMethods(self.LIST_URI, ["OPTIONS", "GET", "HEAD"])
+
+    def test_post_list_not_allowed(self):
+        """
+        Prevent POST requests
+        """
+        self.assertHttpMethodNotAllowed(self.request_with_auth("post", self.LIST_URI))
+
+    def test_put_list_not_allowed(self):
+        """
+        Prevent PUT requests
+        """
+        self.assertHttpMethodNotAllowed(self.request_with_auth("put", self.LIST_URI))
+
+    def test_patch_list_not_allowed(self):
+        """
+        Prevent PATCH requests
+        """
+        raise SkipTest("Django 1.4's test client does not support patch")
+
+    def test_delete_list_not_allowed(self):
+        """
+        Prevent DELETE requests
+        """
+        self.assertHttpMethodNotAllowed(self.request_with_auth("delete", self.LIST_URI))
+
+    def test_list_unauthorized(self):
+        """
+        Prevent unauthorized access
+        """
+        self.assertHttpForbidden(self.client.get(self.LIST_URI))
+
+    @override_settings(DEBUG=True)
+    @override_settings(EDX_API_KEY=None)
+    def test_debug_auth(self):
+        """
+        Authenticate with debug flag set to True
+        """
+        self.assertHttpOK(self.client.get(self.LIST_URI))
+
+    @override_settings(DEBUG=False)
+    @override_settings(EDX_API_KEY=TEST_API_KEY)
+    def test_basic_auth(self):
+        """
+        Support basic authentication
+        """
+        # ensure that having basic auth headers in the mix does not break anything
+        self.assertHttpOK(
+            self.request_with_auth("get", self.LIST_URI,
+                                   **self.basic_auth("someuser", "somepass")))
+        self.assertHttpForbidden(
+            self.client.get(self.LIST_URI, **self.basic_auth("someuser", "somepass")))
+
+    def test_get_list_nonempty(self):
+        """
+        Return results from endpoint
+        """
+        roles = Role.objects.get_or_create(name="Moderator", course_id=self.course_id)
+        role = roles[0]
+        for user in self.users:
+            user.roles.add(role)
+        result = self.get_json(self.LIST_URI)
+        self.assertEqual(result["count"], len(self.users))
+        self.assertIsNone(result["next"])
+        self.assertIsNone(result["previous"])
+        users = result["results"]
+        for user in self.users:
+            self.assertTrue(user.email in [u.get('email') for u in users])
+        self.assertEquals(len(users), len(self.users))
 
 
 class UserViewSetTest(UserApiTestCase):

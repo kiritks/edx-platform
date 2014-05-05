@@ -7,6 +7,7 @@ from rest_framework import permissions
 from rest_framework import viewsets
 from user_api.serializers import UserSerializer, UserPreferenceSerializer
 from user_api.models import UserPreference
+from django_comment_common.models import Role
 
 
 class ApiKeyHeaderPermission(permissions.BasePermission):
@@ -34,6 +35,25 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     paginate_by = 10
     paginate_by_param = "page_size"
 
+class ForumRoleUsersListView(generics.ListAPIView):
+    """
+    Forum roles are represented by a list of user dicts
+    """
+    authentication_classes = (authentication.SessionAuthentication,)
+    permission_classes = (ApiKeyHeaderPermission,)
+    serializer_class = UserSerializer
+    paginate_by = 10
+    paginate_by_param = "page_size"
+
+    def get_queryset(self):
+        """
+        Return a list of users with the specified role/course pair
+        """
+        name = self.kwargs['name']
+        course_id = self.request.QUERY_PARAMS.get('course_id')
+        role = Role.objects.get_or_create(course_id=course_id, name=name)[0]
+        users = role.users.all()
+        return users
 
 class UserPreferenceViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = (authentication.SessionAuthentication,)
