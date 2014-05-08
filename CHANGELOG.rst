@@ -5,6 +5,12 @@ These are notable changes in edx-platform.  This is a rolling list of changes,
 in roughly chronological order, most recent first.  Add your entries at or near
 the top.  Include a label indicating the component affected.
 
+Studio: New advanced setting "invitation_only" for courses. This setting overrides the enrollment start/end dates
+  if set. LMS-2670
+
+LMS: Register button on About page was active even when greyed out. Now made inactive when appropriate and
+  displays appropriate context sensitive message to student. LMS-2717
+
 Studio: Add drag-and-drop support to the container page. STUD-1309.
 
 Common: Add extensible third-party auth module.

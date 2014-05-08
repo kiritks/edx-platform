@@ -51,50 +51,50 @@ class AccessTestCase(TestCase):
         self.assertFalse(access._has_access_to_location(self.student, self.course, 'instructor', None))
 
     def test__has_access_string(self):
-        u = Mock(is_staff=True)
-        self.assertFalse(access._has_access_string(u, 'not_global', 'staff', None))
+        user = Mock(is_staff=True)
+        self.assertFalse(access._has_access_string(user, 'not_global', 'staff', None))
 
-        u._has_global_staff_access.return_value = True
-        self.assertTrue(access._has_access_string(u, 'global', 'staff', None))
+        user._has_global_staff_access.return_value = True
+        self.assertTrue(access._has_access_string(user, 'global', 'staff', None))
 
-        self.assertRaises(ValueError, access._has_access_string, u, 'global', 'not_staff', None)
+        self.assertRaises(ValueError, access._has_access_string, user, 'global', 'not_staff', None)
 
     def test__has_access_descriptor(self):
         # TODO: override DISABLE_START_DATES and test the start date branch of the method
-        u = Mock()
-        d = Mock()
-        d.start = datetime.datetime.now(pytz.utc) - datetime.timedelta(days=1)  # make sure the start time is in the past
+        user = Mock()
+        date = Mock()
+        date.start = datetime.datetime.now(pytz.utc) - datetime.timedelta(days=1)  # make sure the start time is in the past
 
         # Always returns true because DISABLE_START_DATES is set in test.py
-        self.assertTrue(access._has_access_descriptor(u, d, 'load'))
-        self.assertRaises(ValueError, access._has_access_descriptor, u, d, 'not_load_or_staff')
+        self.assertTrue(access._has_access_descriptor(user, date, 'load'))
+        self.assertRaises(ValueError, access._has_access_descriptor, user, date, 'not_load_or_staff')
 
     def test__has_access_course_desc_can_enroll(self):
-        u = Mock()
+        user = Mock()
         yesterday = datetime.datetime.now(pytz.utc) - datetime.timedelta(days=1)
         tomorrow = datetime.datetime.now(pytz.utc) + datetime.timedelta(days=1)
-        c = Mock(enrollment_start=yesterday, enrollment_end=tomorrow, enrollment_domain='')
+        course = Mock(enrollment_start=yesterday, enrollment_end=tomorrow, enrollment_domain='', invitation_only=False)
 
         # User can enroll if it is between the start and end dates
-        self.assertTrue(access._has_access_course_desc(u, c, 'enroll'))
+        self.assertTrue(access._has_access_course_desc(user, course, 'enroll'))
 
         # User can enroll if authenticated and specifically allowed for that course
         # even outside the open enrollment period
-        u = Mock(email='test@edx.org', is_staff=False)
-        u.is_authenticated.return_value = True
+        user = Mock(email='test@edx.org', is_staff=False)
+        user.is_authenticated.return_value = True
 
-        c = Mock(enrollment_start=tomorrow, enrollment_end=tomorrow, id='edX/test/2012_Fall', enrollment_domain='')
+        course = Mock(enrollment_start=tomorrow, enrollment_end=tomorrow, id='edX/test/2012_Fall', enrollment_domain='')
 
-        allowed = CourseEnrollmentAllowedFactory(email=u.email, course_id=c.id)
+        CourseEnrollmentAllowedFactory(email=user.email, course_id=course.id)
 
-        self.assertTrue(access._has_access_course_desc(u, c, 'enroll'))
+        self.assertTrue(access._has_access_course_desc(user, course, 'enroll'))
 
         # Staff can always enroll even outside the open enrollment period
-        u = Mock(email='test@edx.org', is_staff=True)
-        u.is_authenticated.return_value = True
+        user = Mock(email='test@edx.org', is_staff=True)
+        user.is_authenticated.return_value = True
 
-        c = Mock(enrollment_start=tomorrow, enrollment_end=tomorrow, id='edX/test/Whenever', enrollment_domain='')
-        self.assertTrue(access._has_access_course_desc(u, c, 'enroll'))
+        course = Mock(enrollment_start=tomorrow, enrollment_end=tomorrow, id='edX/test/Whenever', enrollment_domain='')
+        self.assertTrue(access._has_access_course_desc(user, course, 'enroll'))
 
         # TODO:
         # Non-staff cannot enroll outside the open enrollment period if not specifically allowed
