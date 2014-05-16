@@ -17,7 +17,7 @@ For more information, see the following sections:
 * :ref:`PA Elements`
 * :ref:`PA Scoring`
 * :ref:`PA Create a PA Problem`
-* :ref:`PA Access Status`
+* :ref:`Accessing PA Information`
 
 .. _PA Elements:
 
@@ -100,14 +100,21 @@ Rubrics are made of *criteria* and *options*.
    * The name is a very short summary of the criterion, such as Ideas or Content. Criterion names generally have just one word. **The name for each criterion must be unique.** The system uses the criterion name for identification. Criterion names do not appear in the rubric that students see when they are completing peer assessments, but they do appear on the page that shows the student's final grade.
 
      .. image :: /Images/PA_CriterionName.png
-        :alt: Image of a final score page with call-outs for the criterion names
+        :alt: A final score page with call-outs for the criterion names
 
-   * The prompt is a description of the criterion. 
+    * The prompt is a description of the criterion. 
 
 * Each option has a *name*, an *explanation*, and a *point value*.
 
   .. image:: /Images/PA_Rubric_LMS.png
      :alt: Image of a rubric in the LMS with call-outs for the criterion prompt and option names, explanations, and points
+
+You can see both criterion and option names when you access assignment information for an individual student. For more information, see :ref:`Accessing PA Information`.
+
+
+.. image:: /Images/PA_Crit_Option_Names.png
+   :width: 600
+   :alt: Student-specific problem information with call-outs for criterion and option names
 
 When you create your rubric, decide how many points each option will receive, and make sure that the explanation for each option is as specific as possible. For example, one criterion and set of options may resemble the following.
 
@@ -525,43 +532,4 @@ Step 7. Test the Problem
 To test your assignment, set up the assignment in a test course, and ask a group of beta users to submit responses and grade each other. The beta testers can then let you know if they found the question and the rubric easy to understand or if they found any problems with the assignment.
 
 .. _PA Access Status:
-
-******************************
-Access Status of Problem Steps
-******************************
-
-After your problem has opened, you can check the current number of students who are in each step--that is, how many students have submitted responses, have completed peer and self assessments, are waiting to assess responses or receive grades, or have finished the problem entirely. 
-
-To find this information, open the problem in the LMS, scroll to the bottom of the problem, and then click the black **Course Staff Information** banner.
-
-.. image:: /Images/PA_CourseStaffInfo_Collapsed.png
-   :alt: The Course Staff Information banner at the bottom of the peer assessment
-
-**Course Staff Information** expands, and you can see the number of students who are actively in each step of the problem.
-
-.. image:: /Images/PA_CourseStaffInfo_Expanded.png
-   :alt: The Course Staff Information box expanded, showing problem status
-
-
-******************************
-Get Individual Student Info
-******************************
-
-Know anonymized ID:
-
-Instructor Dashboard > Data Download > Data Download section: Get Student Anonymized IDs CSV (button)
-Open csv file
-Column C: Course Specific Anonymized User ID
-(how to know which student?)
-Copy value
-
-Back to courseware
-Locate problem
-Course Staff Information
-Bottom: Get Student Info field
-Click Submit
-
-Student info appears below
-
-SS: Combine 18 and 19
 
