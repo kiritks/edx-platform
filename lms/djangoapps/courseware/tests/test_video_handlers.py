@@ -806,9 +806,9 @@ class TestVideoGradeHandler(TestVideo):
         self.assertEqual(response.status_code, 500)
 
     def test_grader_in_studio(self):
-        test_grader_name = 'scored_on_percent'
-        self.assertFalse(self.item.cumulative_score[test_grader_name]['graderStatus'])
-        request = Request.blank('', POST={'graderName': test_grader_name})
+        self.item.runtime.get_real_user = None
+        self.item.cumulative_score['scored_on_end']['graderStatus'] = True
+        request = Request.blank('', POST={'graderName': 'scored_on_percent'})
         response = self.item.grade_handler(request=request, dispatch='')
-        self.assertFalse(self.item.cumulative_score[test_grader_name]['graderStatus'])
+        self.assertFalse(self.item.cumulative_score['scored_on_percent']['graderStatus'])
         self.assertEqual(response.status_code, 501)  # NotImplemented
