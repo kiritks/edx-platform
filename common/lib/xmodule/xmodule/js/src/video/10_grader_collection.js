@@ -40,11 +40,29 @@ function (AbstractGrader) {
         name: 'scored_on_end',
 
         getGrader: function (element) {
-            var dfd = $.Deferred();
+            this.dfd = $.Deferred();
 
-            element.on('ended', dfd.resolve);
+            element.on({
+                'ended': this.dfd.resolve,
+                'endTime': this.dfd.resolve,
+                'ready': this.updateRange.bind(this),
+                'play': _.once(this.updateRange.bind(this)),
+                'seek': this.onSeekHandler.bind(this)
+            });
 
-            return dfd.promise();
+            return this.dfd.promise();
+        },
+
+        updateRange: function (event, time) {
+            setTimeout(function () {
+                this.range = this.getStartEndTimes();
+            }.bind(this), 0);
+        },
+
+        onSeekHandler: function (event, time) {
+            if (time < this.range.start || this.range.end < time) {
+                this.dfd.resolve();
+            }
         }
     });
 
@@ -54,15 +72,13 @@ function (AbstractGrader) {
 
         getGrader: function (element, state, config) {
             this.dfd = $.Deferred();
-            this.element = element;
-            this.state = state;
             this.coef = 1;
             this.graderValue = this.config.graderValue + 1;
 
             if (this.config.graderValue === 0) {
                 this.dfd.resolve();
             } else {
-                this.element.on('play', _.once(this.onPlayHandler.bind(this)));
+                element.on('play', _.once(this.onPlayHandler.bind(this)));
             }
 
             return this.dfd.promise();
@@ -78,35 +94,43 @@ function (AbstractGrader) {
         },
 
         onPlayHandler: function (event) {
-            var waitTime, milliseconds;
+            setTimeout(function () {
+                var milliseconds, waitTime;
 
-            this.duration = this.state.videoPlayer.duration();
-            milliseconds = 1000 * this.duration;
-            waitTime = Math.max(milliseconds/100, 1000);
+                this.range = this.getStartEndTimes();
+                milliseconds = 1000 * this.range.size;
+                waitTime = Math.max(milliseconds/100, 1000);
 
-            // In case, when video less than 20 seconds, we receive less than
-            // 100 events `progress` (it is trigger with interval 200 ms).
-            // So, we adjust some settings to make it works well.
-            // `this.size` will be equal amount of received events.
-            if (milliseconds/waitTime < 100) {
-                this.size = milliseconds/waitTime;
-                this.coef = 100 / this.size;
-            }
+                // In case, when video less than 20 seconds, we receive less
+                // than 100 events `progress`(it triggers with interval 200 ms).
+                // So, we adjust some settings to make it works well.
+                // `this.size` will be equal amount of received events.
+                if (milliseconds/waitTime < 100) {
+                    this.size = milliseconds/waitTime;
+                    this.coef = 100 / this.size;
+                }
 
-            this.timeline = this.createTimeline(this.size);
+                this.timeline = this.createTimeline(this.size);
 
-            this.element.on(
-                'progress',
-                _.throttle(this.onProgressHandler.bind(this), waitTime)
-            );
+                this.element.on(
+                    'progress',
+                    _.throttle(
+                        this.onProgressHandler.bind(this), waitTime,
+                        { leading: false, trailing: true }
+                    )
+                );
+            }.bind(this), 0);
         },
 
-        onProgressHandler: function (event, currentTime) {
-            var position = Math.floor(this.size * currentTime/this.duration);
+        onProgressHandler: function (event, time) {
+            time = Math.floor(time);
+            if (this.range.start <= time && time <= this.range.end) {
+                var position = Math.floor(this.size * time/this.range.size);
 
-            this.timeline[position] = 1;
-            if (this.getProgress(this.timeline) >= this.graderValue) {
-                this.dfd.resolve();
+                this.timeline[position] = 1;
+                if (this.getProgress(this.timeline) >= this.graderValue) {
+                    this.dfd.resolve();
+                }
             }
         }
     });
