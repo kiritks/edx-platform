@@ -1,8 +1,20 @@
 .. include:: ../links.rst
 
+.. _Installing the edX Developer Stack:
+
 ####################################
 Installing the edX Developer Stack
 ####################################
+
+See the following sections:
+
+* `Overview`_
+* `Components`_
+* `Knowledge Prerequisites`_
+* `Software Prerequisites`_
+* `Install DevStack`_
+* `Install DevStack using the Torrent file`_
+
 
 **********
 Overview
@@ -33,7 +45,6 @@ Devstack includes the following edX components:
 * Open Response Assessor (ORA)
   
 
-
 **************************
 Knowledge Prerequisites
 **************************
@@ -44,7 +55,6 @@ To use Devstack, you should:
   `Introduction to the Mac OS X Command Line`_.
 
 * Understand Vagrant commands. See the `Vagrant Getting Started`_ guide for more information.
-
 
 
 **************************
@@ -61,8 +71,6 @@ To install and run Devstack, you must first install:
   VirtualBox Guest Editions to share folders through NFS.
   
 
-
-
 **************************
 Install DevStack
 **************************
@@ -77,26 +85,26 @@ Before beginning the installation, ensure that you have your local computer's ad
 
 #. Create the ``devstack`` directory and navigate to it in the command prompt.
    
-   .. code-block:: guess
+   .. code-block:: bash
 
      mkdir devstack
      cd devstack
 
 #. Download the devstack Vagrant file.
    
-   .. code-block:: guess
+   .. code-block:: bash
 
      curl -L https://raw.github.com/edx/configuration/master/vagrant/release/devstack/Vagrantfile > Vagrantfile
 
 #. Install the Vagrant vbguest plugin.
    
-   .. code-block:: guess
+   .. code-block:: bash
 
      vagrant plugin install vagrant-vbguest
 
 #. Create the Devstack virtual machine.
 
-   .. code-block:: guess
+   .. code-block:: bash
 
      vagrant up
 
@@ -106,9 +114,8 @@ Before beginning the installation, ensure that you have your local computer's ad
 
 #. When prompted, enter your local computer's administrator's password.
 
-When you have completed these steps, see :ref:`Running the edX Developer Stack` to
-begin using Devstack.
-
+When you have completed these steps, see :ref:`Running the edX Developer Stack`
+to begin using Devstack.
 
 
 *****************************************
@@ -120,6 +127,6 @@ You can download the Devstack `Torrent`_ file.
 When you have the file on your computer, add the Virtual machine using the
 command:
 
-.. code-block:: guess
+.. code-block:: bash
   
  vagrant box add box-name path-to-box-file

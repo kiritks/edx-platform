@@ -12,6 +12,6 @@ May, 2014
 
    * - Date
      - Change
-   * - 
-     - 
+   * - 05/19/2014
+     - First release of this guide, with the sections
    
