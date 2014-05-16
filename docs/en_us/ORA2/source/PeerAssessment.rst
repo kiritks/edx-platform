@@ -543,4 +543,25 @@ To find this information, open the problem in the LMS, scroll to the bottom of t
    :alt: The Course Staff Information box expanded, showing problem status
 
 
+******************************
+Get Individual Student Info
+******************************
+
+Know anonymized ID:
+
+Instructor Dashboard > Data Download > Data Download section: Get Student Anonymized IDs CSV (button)
+Open csv file
+Column C: Course Specific Anonymized User ID
+(how to know which student?)
+Copy value
+
+Back to courseware
+Locate problem
+Course Staff Information
+Bottom: Get Student Info field
+Click Submit
+
+Student info appears below
+
+SS: Combine 18 and 19
 
