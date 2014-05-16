@@ -193,9 +193,16 @@ class VideoFields(object):
         scope=Scope.settings,
         values={"min": 0},
     )
+    
     cumulative_score = Dict(
         help="Accumulates results from particular graders.",
         display_name="Cumulative scores.",
         scope=Scope.user_state,
         default={}
+    )
+    
+    grade_videos = Boolean(
+        help="Whether videos in the course are gradeable",
+        default=False,
+        scope=Scope.settings
     )
