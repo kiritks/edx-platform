@@ -12,7 +12,9 @@ function() {
      * player.
      * @return {jquery Promise}
      */
-    var AbstractGrader = function () { };
+    var AbstractGrader = function () {
+        return this.initialize.apply(this, arguments);
+    };
 
     /**
      * Returns new constructor that inherits form the current constructor.
