@@ -315,7 +315,7 @@ You can configure your course content so that components contain other
 components.  For example, if you want to include conditional components or A/B tests, you have to create components inside components. See :ref:`Setting Up A/B Tests` for more information.
 
 The component that contains other components is referred to as the *parent*; the
-contained components are *referred to as *children*.
+contained components are referred to as *children*.
 
 In the unit page, a parent component appears with the display name and a **VIEW** link. For example:
 
@@ -336,7 +336,12 @@ Click the arrow next to a child component name to collapse it and hide the compo
 
 Click the arrow again to expand the component.
 
-.. note:: In this release, you cannot create parent and child components in Studio. You must export the course and set up components and their relationships in the course XML files outside of Studio. After you import the course into Studio, you can work with child components just as you can with any other component, if the containing unit is Private or in draft. 
+.. note:: 
+  In this release, you cannot create parent components in Studio. You must export
+  the course and set up parent components in the course XML files outside of
+  Studio. After you import the course into Studio, you can create and edit child
+  components just as you can with any other component, if the containing unit is
+  Private or in draft.
 
 See:
 
@@ -344,6 +349,27 @@ See:
 * `Set the Display Name for a Component`_
 * `Duplicate a Component`_
 * `Delete a Component`_
+
+======================================
+Add a Child Component
+======================================
+
+If the unit is Private, or if you are editing a draft of the unit, you can add
+child components.
+
+To add a child component, click the component type that you want under
+**Add New Component** within the container component.
+
+.. image:: ../Images/AddNewComponent.png
+  :alt: Image of adding a new component
+
+For more information, see the documentation for the specific component type that
+you want:
+
+- :ref:`Working with Discussion Components`
+- :ref:`Working with HTML Components`
+- :ref:`Working with Problem Components`
+- :ref:`Working with Video Components`
 
 
 ======================================
