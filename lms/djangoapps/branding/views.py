@@ -43,9 +43,12 @@ def index(request):
 
     domain = request.META.get('HTTP_HOST')
 
+    # To load edge template in tests.
+    load_edge = request.GET.get("edge")
+
     # keep specialized logic for Edge until we can migrate over Edge to fully use
     # microsite definitions
-    if domain and 'edge.edx.org' in domain:
+    if (domain and 'edge.edx.org' in domain) or load_edge:
         context = {
             'suppress_toplevel_navigation': True
         }
