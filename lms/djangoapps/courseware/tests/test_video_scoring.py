@@ -52,6 +52,7 @@ class TestVideoScoring(BaseTestXmodule):
     def test_graders_only_has_score(self):
         metadata = {
             'has_score': True,
+            'grade_videos': True,
         }
         self.initialize_module(metadata=metadata)
         self.item_descriptor.render('student_view')
@@ -64,6 +65,7 @@ class TestVideoScoring(BaseTestXmodule):
             'has_score': True,
             'scored_on_end': True,
             'scored_on_percent': 75,
+            'grade_videos': True,
         }
         self.initialize_module(metadata=metadata)
         self.item_descriptor.render('student_view')
@@ -80,6 +82,7 @@ class TestVideoScoring(BaseTestXmodule):
     def test_scored_module(self):
         metadata = {
             'has_score': True,
+            'grade_videos': True,
         }
         self.initialize_module(metadata=metadata)
         self.item_descriptor.render('student_view')
