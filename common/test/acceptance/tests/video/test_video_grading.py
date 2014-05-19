@@ -48,7 +48,7 @@ class YouTubeVideoGradedTest(VideoGradedTest):
         When I open progress page
         Then I see current scores are "1/1"
         """
-        data = {'has_score': True, 'scored_on_percent': 1}
+        data = {'has_score': True, 'scored_on_percent': 1, 'grade_videos': True}
         self.metadata = self.metadata_for_mode('youtube', additional_data=data)
         self.navigate_to_video()
         self._assert_video_is_not_scored()
@@ -79,7 +79,7 @@ class Html5VideoGradedTest(VideoGradedTest):
         When I open progress page
         Then I see current scores are "1/1"
         """
-        data = {'has_score': True, 'scored_on_end': True, 'weight': 15.0}
+        data = {'has_score': True, 'scored_on_end': True, 'weight': 15.0, 'grade_videos': True}
         self.metadata = self.metadata_for_mode('html5', additional_data=data)
         self.navigate_to_video()
         self._assert_video_is_not_scored(weight=15.0)
@@ -111,7 +111,7 @@ class Html5VideoGradedTest(VideoGradedTest):
         When I open progress page
         Then I see current scores are "1/1"
         """
-        data = {'has_score': True, 'scored_on_end': True, 'scored_on_percent': 40}
+        data = {'has_score': True, 'scored_on_end': True, 'scored_on_percent': 40, 'grade_videos': True}
         self.metadata = self.metadata_for_mode('html5', additional_data=data)
         self.navigate_to_video()
 
@@ -143,7 +143,7 @@ class Html5VideoGradedTest(VideoGradedTest):
         but after that navigate to other position of sequential and back,
         and same message should still appear.
         """
-        data = {'has_score': True, 'scored_on_end': True}
+        data = {'has_score': True, 'scored_on_end': True, 'grade_videos': True}
         a_metadata = self.metadata_for_mode('html5', additional_data=data)
         b_metadata = self.metadata_for_mode('html5')
 
