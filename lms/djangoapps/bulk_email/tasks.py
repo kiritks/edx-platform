@@ -119,7 +119,10 @@ def _get_recipient_queryset(user_id, to_option, course_id, course_location):
                 courseenrollment__is_active=True
             )
             recipient_qset = recipient_qset | enrollment_qset
-        recipient_qset = recipient_qset.distinct()
+
+        # it's this "distinct" call that seems to be forcing the creation
+        # of a temporary table
+        # recipient_qset = recipient_qset.distinct()
 
     recipient_qset = recipient_qset.order_by('pk')
     return recipient_qset

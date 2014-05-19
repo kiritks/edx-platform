@@ -5,6 +5,7 @@ from time import time
 import json
 from uuid import uuid4
 import math
+from itertools import groupby
 
 from celery.utils.log import get_task_logger
 from celery.states import SUCCESS, READY_STATES, RETRY
@@ -81,6 +82,11 @@ def _generate_items_for_subtask(item_queryset, item_fields, total_num_items, tot
             item_sublist = list(item_queryset.order_by('pk').filter(pk__gt=last_pk)[:items_per_query].values(*all_item_fields))
         else:
             item_sublist = list(item_queryset.order_by('pk').filter(pk__gt=last_pk).values(*all_item_fields))
+
+        # since the `item_queryset` is already sorted, we can more efficently
+        # root out duplicates using groupby, since querying with "DISTINCT"
+        # gives the db a headache
+        item_sublist = [list(group).pop() for __, group in groupby(item_sublist, lambda x: x['pk'])]
 
         last_pk = item_sublist[-1]['pk']
         num_items_this_query = len(item_sublist)
