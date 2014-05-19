@@ -210,10 +210,20 @@ def test_python(options):
 
 
 @task
+def test_i18n():
+    """
+    Run all i18n tests
+    """
+    # TODO: update this when the i18n tasks are deprecated to paver
+    test_utils.test_sh("rake i18n:test")
+
+
+@task
 def test(options):
     """
     Run all tests
     """
+    test_i18n()
     test_python(options)
     js_test.test_js_coverage()
     call_task('pavelib.docs.build_docs')
