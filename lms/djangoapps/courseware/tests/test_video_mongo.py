@@ -29,7 +29,7 @@ class VideoHTMLRenderMixin(object):
             ).rstrip('/?'),
             'has_score': json.dumps(self.item_descriptor.has_score),
             'max_score': json.dumps(self.item_descriptor.max_score()),
-            'module_score': json.dumps(self.item_descriptor.module_score if self.item_descriptor.module_score else 0),
+            'module_score': json.dumps(self.item_descriptor.module_score if self.item_descriptor.module_score else None),
             'graders': self.item_descriptor.graders(),
         }
 
@@ -494,6 +494,11 @@ class TestVideoDescriptorInitialization(BaseTestXmodule):
                 },
                 'transcripts': {},
                 'handout': {},
+                'grade_videos':{},
+                'has_score': {},
+                'scored_on_end': {},
+                'scored_on_percent': {},
+                'weight': {},
             }
         ):
             metadata = {
