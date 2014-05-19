@@ -193,7 +193,7 @@ describe('VideoVolumeControl', function () {
         it('volume is increased correctly', function () {
             volumeControl.volume = 60;
             state.el.trigger(jQuery.Event("keydown", {
-                keyCode: 38
+                keyCode: $.ui.keyCode.UP
             }));
             expect(volumeControl.volume).toEqual(80);
         });
@@ -211,10 +211,10 @@ describe('VideoVolumeControl', function () {
             volumeControl = state.videoVolumeControl;
         });
 
-        it('volume is increased correctly', function () {
+        it('volume is decreased correctly', function () {
             volumeControl.volume = 60;
             state.el.trigger(jQuery.Event("keydown", {
-                keyCode: 40
+                keyCode: $.ui.keyCode.DOWN
             }));
             expect(volumeControl.volume).toEqual(40);
         });
@@ -272,23 +272,23 @@ describe('VideoVolumeControl', function () {
             expect(volumeControl.volume).toEqual(60);
         };
 
-        it('nothing happens if ALT is pushed down', function () {
+        it('nothing happens if ALT+keyUp are pushed down', function () {
             assertVolumeIsNotChanged({
-                keyCode: 38,
+                keyCode: $.ui.keyCode.UP,
                 altKey: true
             });
         });
 
         it('nothing happens if SHIFT+keyUp are pushed down', function () {
             assertVolumeIsNotChanged({
-                keyCode: 38,
+                keyCode: $.ui.keyCode.UP,
                 shiftKey: true
             });
         });
 
         it('nothing happens if SHIFT+keyDown are pushed down', function () {
             assertVolumeIsNotChanged({
-                keyCode: 40,
+                keyCode: $.ui.keyCode.DOWN,
                 shiftKey: true
             });
         });
@@ -300,10 +300,10 @@ describe('VideoVolumeControl', function () {
             volumeControl = state.videoVolumeControl;
         });
 
-        it('nothing happens if ALT is pushed down', function () {
+        it('nothing happens if ALT+ENTER are pushed down', function () {
             var isMuted = volumeControl.getMuteStatus();
             $('.volume > a').trigger(jQuery.Event("keydown", {
-                keyCode: 13,
+                keyCode: $.ui.keyCode.ENTER,
                 altKey: true
             }));
             expect(volumeControl.getMuteStatus()).toEqual(isMuted);
