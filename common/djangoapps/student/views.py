@@ -1234,10 +1234,11 @@ def create_account(request, post_override=None):  # pylint: disable-msg=too-many
     dog_stats_api.increment("common.student.account_created")
     create_comments_service_user(user)
 
-    analytics.track(user.id, "Created a New Account", {
-        'email': user.email,
-        'username': user.username
-    })
+    if settings.FEATURES.get('SEGMENT_IO_LMS') and settings.SEGMENT_IO_LMS_KEY:
+        analytics.track(user.id, "Created a New Account", {
+            'email': user.email,
+            'username': user.username
+        })
 
     context = {
         'name': post_vars['name'],

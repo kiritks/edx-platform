@@ -33,9 +33,10 @@ def enrollment_change_callback(sender, **kwargs):
     else:
         event_message = "Unenrolled from a Course"
 
-    analytics.track(kwargs['user_id'], event_message, {
-        'org': kwargs['org'],
-        'course': kwargs['course'],
-        'run': kwargs['run'],
-        'mode': kwargs['mode']
-    })
+    if settings.FEATURES.get('SEGMENT_IO_LMS') and settings.SEGMENT_IO_LMS_KEY:
+        analytics.track(kwargs['user_id'], event_message, {
+            'org': kwargs['org'],
+            'course': kwargs['course'],
+            'run': kwargs['run'],
+            'mode': kwargs['mode']
+        })
