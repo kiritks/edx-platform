@@ -1,8 +1,8 @@
 (function (require) {
 'use strict';
 require(
-['video/11_grader.js', 'video/00_i18n.js'],
-function (Grader, i18n) {
+['video/11_grader.js', 'video/00_i18n.js', 'video/00_abstract_grader.js'],
+function (Grader, i18n, AbstractGrader) {
 describe('VideoGrader', function () {
     var SCORED_TEXT = '(0.5 / 1.0 points)',
         POSSIBLE_SCORES = '1.0 points possible',
@@ -11,7 +11,7 @@ describe('VideoGrader', function () {
             'An error occurred. ',
             'Please refresh the page and try viewing the video again.'
         ].join(''),
-        state, grader;
+        state;
 
     beforeEach(function () {
         loadFixtures('video.html');
@@ -27,6 +27,8 @@ describe('VideoGrader', function () {
             },
             config: {
                 hasScore: true,
+                startTime: 0,
+                endTime: null,
                 maxScore: '1.0',
                 score: null,
                 gradeUrl: '/grade_url',
@@ -34,7 +36,8 @@ describe('VideoGrader', function () {
                     scored_on_end: {graderStatus: false, graderValue: true},
                     scored_on_percent: {graderStatus: false, graderValue: 2}
                 }
-            }
+            },
+            isFlashMode: jasmine.createSpy().andReturn(false)
         };
     });
 
@@ -133,11 +136,13 @@ describe('VideoGrader', function () {
             state.config.graders.scored_on_end.graderStatus = true;
             jasmine.stubRequests();
             spyOn(_, 'throttle').andCallFake(function(f){ return f; }) ;
+            jasmine.Clock.useMock();
         });
 
         it('shows success message', function () {
             new Grader(state, i18n);
             state.el.trigger('play');
+            jasmine.Clock.tick(10);
             expect($('.problem-feedback').length).toBe(0);
             state.el.trigger('progress', [0.9]);
             expect($('.problem-feedback').length).toBe(0);
@@ -154,6 +159,7 @@ describe('VideoGrader', function () {
             state.config.graders.scored_on_percent.graderValue = 100;
             new Grader(state, i18n);
             state.el.trigger('play');
+            jasmine.Clock.tick(10);
 
             for (var i = 0, k = 0; i <= 100; i++, k += 1) {
                 state.el.trigger('progress', [k]);
@@ -174,12 +180,135 @@ describe('VideoGrader', function () {
             state.config.graders.scored_on_percent.graderValue = 50;
             new Grader(state, i18n);
             state.el.trigger('play');
+            jasmine.Clock.tick(10);
 
             for (var i = 0, k = 0; i <= 5; i++, k += 0.2) {
                 state.el.trigger('progress', [k]);
             }
 
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+        });
+    });
+
+    describe('getStartEndTimes', function () {
+        var config = {
+                'scored_on_end': {
+                    graderStatus: false
+                }
+            }, grader;
+
+        beforeEach(function () {
+            spyOn(AbstractGrader.prototype, 'getGrader');
+            spyOn(AbstractGrader.prototype, 'sendGradeOnSuccess');
+        });
+
+        afterEach(function () {
+            delete this.grader;
+        });
+
+        describe('startTime', function () {
+            it('returns initial value', function () {
+                var actual;
+
+                state.config.startTime = 10;
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 10,
+                    end: 100,
+                    size: 90
+                });
+            });
+
+            it('returns 0 if it is bigger than duration', function () {
+                var actual;
+
+                state.config.startTime = 100;
+                state.videoPlayer.duration.andReturn(50);
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 0,
+                    end: 50,
+                    size: 50
+                });
+            });
+
+            it('returns correct values in flash mode', function () {
+                var actual;
+
+                state.config.startTime = 10;
+                state.speed = 2;
+                state.videoPlayer.duration.andReturn(200);
+                state.isFlashMode.andReturn(true);
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 5,
+                    end: 100,
+                    size: 95
+                });
+            });
+        });
+
+        describe('endTime', function () {
+            it('returns initial value', function () {
+                var actual;
+
+                state.config.endTime = 20;
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 0,
+                    end: 20,
+                    size: 20
+                });
+            });
+
+            it('returns duration if it is bigger than duration', function () {
+                var actual;
+
+                state.config.endTime = 100;
+                state.videoPlayer.duration.andReturn(50);
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 0,
+                    end: 50,
+                    size: 50
+                });
+            });
+
+            it('returns duration if it is less than start time', function () {
+                var actual;
+
+                state.config.startTime = 50;
+                state.config.endTime = 40;
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes();
+                expect(actual).toEqual({
+                    start: 50,
+                    end: 100,
+                    size: 50
+                });
+            });
+
+            it('returns correct values in flash mode', function () {
+                var actual;
+
+                state.config.endTime = 10;
+                state.speed = 2;
+                state.videoPlayer.duration.andReturn(200);
+                state.isFlashMode.andReturn(true);
+                this.grader = new AbstractGrader(state.el, state, config);
+                actual = this.grader.getStartEndTimes()
+
+                expect(actual).toEqual({
+                    start: 0,
+                    end: 5,
+                    size: 5
+                });
+            });
         });
     });
 });

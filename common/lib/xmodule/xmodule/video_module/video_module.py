@@ -264,6 +264,8 @@ class VideoDescriptor(VideoFields, VideoStudioViewHandlers, TabsEditingDescripto
         editable_fields['transcripts']['urlRoot'] = self.runtime.handler_url(self, 'studio_transcript', 'translation').rstrip('/?')
         editable_fields['handout']['type'] = 'FileUploader'
 
+        editable_fields.pop('grade_videos')
+
         if not self.grade_videos:
             for field_name in ['has_score', 'scored_on_end', 'scored_on_percent', 'weight']:
                 editable_fields.pop(field_name)

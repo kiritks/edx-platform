@@ -12,7 +12,9 @@ function() {
      * player.
      * @return {jquery Promise}
      */
-    var AbstractGrader = function () { };
+    var AbstractGrader = function () {
+        return this.initialize.apply(this, arguments);
+    };
 
     /**
      * Returns new constructor that inherits form the current constructor.
@@ -49,11 +51,11 @@ function() {
 
         /** Initializes the module. */
         initialize: function (element, state, config) {
-            this.el = element;
+            this.element = element;
             this.state = state;
             this.config = config;
             this.url = this.state.config.gradeUrl;
-            this.grader = this.getGrader(this.el, this.state, this.config);
+            this.grader = this.getGrader(this.element, this.state, this.config);
 
             return this.sendGradeOnSuccess(this.grader);
         },
@@ -63,7 +65,7 @@ function() {
          * @return {jquery Promise}
          * @example:
          *   var dfd = $.Deferred();
-         *   this.el.on('play', dfd.resolve);
+         *   this.element.on('play', dfd.resolve);
          *   return dfd.promise();
          */
         getGrader: function (element, state, config) {
@@ -91,7 +93,51 @@ function() {
          */
         sendGradeOnSuccess: function (grader) {
             return grader.pipe(this.sendGrade.bind(this));
-        }
+        },
+
+        /**
+         * Returns start/end times for the video.
+         * @return {Object} Contains start, end times and size of the interval.
+         */
+        getStartEndTimes: function () {
+            var storage = {
+                duration: null,
+                range: null
+            };
+
+            return function () {
+                var startTime = this.state.config.startTime,
+                    endTime = this.state.config.endTime,
+                    duration = this.state.videoPlayer.duration();
+
+                if (duration === storage.duration && storage.range) {
+                    return storage.range;
+                } else {
+                    storage.duration = duration;
+                }
+
+                if (startTime >= duration) {
+                    startTime = 0;
+                }
+
+                if (endTime <= startTime || endTime >= duration) {
+                    endTime = duration;
+                }
+
+                if (this.state.isFlashMode()) {
+                    startTime /= Number(this.state.speed);
+                    endTime /= Number(this.state.speed);
+                }
+
+                storage.range = {
+                    start: startTime,
+                    end: endTime,
+                    size: endTime - startTime
+                };
+
+                return storage.range;
+            };
+        }()
     };
 
     return AbstractGrader;
