@@ -78,7 +78,7 @@ class VideoScoringMixin(object):
             if name.startswith('scored') and getattr(self, name)
         }
 
-        if active_grades:
+        if active_graders:
             graders_updated = sorted(self.cumulative_score) != sorted(active_graders)
             graders_values_changed = False
 
@@ -92,7 +92,7 @@ class VideoScoringMixin(object):
             if graders_updated or graders_values_changed:
                 self.cumulative_score = {
                     grader_name: {
-                        'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False)
+                        'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False),
                         'saveState': grader_name in save_state,
                         'graderValue': grader_value,
                         'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)
@@ -104,7 +104,7 @@ class VideoScoringMixin(object):
             grader_name = 'basic_grader'
             self.cumulative_score = {
                 grader_name: {
-                    'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False)
+                    'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False),
                     'saveState': False,
                     'graderValue': True,
                     'graderState': None,
