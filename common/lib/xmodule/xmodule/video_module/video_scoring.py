@@ -14,7 +14,7 @@ class VideoScoringMixin(object):
     """
     @property
     def really_has_score(self):
-        return self.max_score and self.grade_videos
+        return self.has_score and self.grade_videos
 
     def max_score(self):
         return self.weight if self.really_has_score else None
