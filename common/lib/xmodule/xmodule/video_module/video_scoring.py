@@ -83,7 +83,12 @@ class VideoScoringMixin(object):
 
         if graders_updated or graders_values_changed:
             self.cumulative_score = {
-                grader_name: {'graderStatus': False, 'saveState': (grader_name in save_state), 'graderValue': grader_value, 'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)}
+                grader_name: {
+                    'graderStatus': False,
+                    'saveState': grader_name in save_state,
+                    'graderValue': grader_value,
+                    'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)
+                }
                 for grader_name, grader_value in active_graders.items()
             }
 
