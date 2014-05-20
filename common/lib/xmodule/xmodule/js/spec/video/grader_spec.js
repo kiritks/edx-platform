@@ -35,12 +35,12 @@ describe('VideoGrader', function () {
                 gradeUrl: '/grade_url',
                 graders: {
                     scored_on_end: {
-                        graderStatus: false,
+                        isScored: false,
                         graderValue: true,
                         saveState: false
                     },
                     scored_on_percent: {
-                        graderStatus: false,
+                        isScored: false,
                         graderValue: 2,
                         saveState: true
                     }
@@ -80,7 +80,7 @@ describe('VideoGrader', function () {
 
     describe('Status bar', function () {
         beforeEach(function () {
-            state.config.graders.scored_on_percent.graderStatus = true;
+            state.config.graders.scored_on_percent.isScored = true;
             jasmine.Clock.useMock();
         });
 
@@ -126,11 +126,41 @@ describe('VideoGrader', function () {
         });
     });
 
+    describe('BasicGrader', function () {
+        beforeEach(function () {
+            state.config.graders['basic_grader'] = {
+                isScored: false,
+                graderValue: true,
+                saveState: false
+            };
+            state.config.graders.scored_on_percent.isScored = true;
+            state.config.graders.scored_on_end.isScored = true;
+            jasmine.stubRequests();
+            new Grader(state, i18n);
+        });
+
+        it('updates status message when done on play', function () {
+            state.el.trigger('play');
+            expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+        });
+
+        it('updates status message when done on video download', function () {
+            state.el.find('.video-download-button').trigger('click');
+            expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+        });
+    });
+
     describe('GradeOnEnd', function () {
         beforeEach(function () {
             jasmine.Clock.useMock();
-            state.config.graders.scored_on_percent.graderStatus = true;
+            state.config.graders.scored_on_percent.isScored = true;
             jasmine.stubRequests();
+        });
+
+        it('updates status message when done on video download', function () {
+            new Grader(state, i18n);
+            state.el.find('.video-download-button').trigger('click');
+            expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
         });
 
         describe('ended', function () {
@@ -194,7 +224,7 @@ describe('VideoGrader', function () {
 
     describe('GradeOnPercent', function () {
         beforeEach(function () {
-            state.config.graders.scored_on_end.graderStatus = true;
+            state.config.graders.scored_on_end.isScored = true;
             jasmine.stubRequests();
             spyOn(_, 'throttle').andCallFake(function(f){ return f; }) ;
             jasmine.Clock.useMock();
@@ -277,7 +307,7 @@ describe('VideoGrader', function () {
     describe('getStartEndTimes', function () {
         var config = {
                 'scored_on_end': {
-                    graderStatus: false
+                    isScored: false
                 }
             }, grader;
 

@@ -21,7 +21,7 @@ function (AbstractGrader) {
             graders = state.config.graders,
             conversions = {
                 'basic_grader': 'BasicGrader',
-                'scored_on_percent': 'GradeOnPercent'
+                'scored_on_end': 'GradeOnEnd',
                 'scored_on_percent': 'GradeOnPercent'
             };
 
@@ -41,13 +41,12 @@ function (AbstractGrader) {
         name: 'basic_grader',
 
         getGrader: function (element) {
-            var downloadButton =  this.state.el.find('.video-download-button');
+            var downloadButton =  this.state.el.find('.video-download-button'),
+                dfd = $.Deferred();
+            element.on('play', dfd.resolve);
+            downloadButton.on('click', dfd.resolve);
 
-            this.dfd = $.Deferred();
-            element.on('play', this.dfd.resolve);
-            downloadButton.on('click', this.dfd.resolve);
-
-            return this.dfd.promise();
+            return dfd.promise();
         }
     });
 

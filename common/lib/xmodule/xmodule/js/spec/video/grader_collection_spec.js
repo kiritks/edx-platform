@@ -15,8 +15,8 @@ describe('VideoGraderCollection', function () {
             config: {
                 hasScore: true,
                 graders: {
-                    scored_on_end: {graderStatus: false, graderValue: true},
-                    scored_on_percent: {graderStatus: false, graderValue: 1}
+                    scored_on_end: {isScored: false, graderValue: true},
+                    scored_on_percent: {isScored: false, graderValue: 1}
                 }
             }
         };
@@ -47,7 +47,7 @@ describe('VideoGraderCollection', function () {
     it('returns just a list of unscored graders', function () {
         var list;
 
-        state.config.graders.scored_on_end.graderStatus = true;
+        state.config.graders.scored_on_end.isScored = true;
         list = new GraderCollection(state.el, state);
         expect(list.length).toBe(1);
     });
