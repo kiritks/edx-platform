@@ -325,7 +325,7 @@ class VideoStudentViewHandlers(object):
         """
         grader_name = request.POST.get('graderName', None)
 
-        if not grader_name or grader_name not in self.graders():
+        if not grader_name or grader_name not in [self.graders(), 'basic_grader']:
             return Response(status=400)
 
         if not all(

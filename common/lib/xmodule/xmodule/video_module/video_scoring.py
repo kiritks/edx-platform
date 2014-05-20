@@ -78,25 +78,37 @@ class VideoScoringMixin(object):
             if name.startswith('scored') and getattr(self, name)
         }
 
-        graders_updated = sorted(self.cumulative_score) != sorted(active_graders)
-        graders_values_changed = False
+        if active_grades:
+            graders_updated = sorted(self.cumulative_score) != sorted(active_graders)
+            graders_values_changed = False
 
-        # Check if values of graders were updated.
-        if not graders_updated:
-            for grader_name, grader_dict in self.cumulative_score.items():
-                if grader_dict['graderValue'] != active_graders[grader_name]:
-                    graders_values_changed = True
-                    break
+            # Check if values of graders were updated.
+            if not graders_updated:
+                for grader_name, grader_dict in self.cumulative_score.items():
+                    if grader_dict['graderValue'] != active_graders[grader_name]:
+                        graders_values_changed = True
+                        break
 
-        if graders_updated or graders_values_changed:
+            if graders_updated or graders_values_changed:
+                self.cumulative_score = {
+                    grader_name: {
+                        'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False)
+                        'saveState': grader_name in save_state,
+                        'graderValue': grader_value,
+                        'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)
+                    }
+                    for grader_name, grader_value in active_graders.items()
+                }
+
+        else:
+            grader_name = 'basic_grader'
             self.cumulative_score = {
                 grader_name: {
                     'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False)
-                    'saveState': grader_name in save_state,
-                    'graderValue': grader_value,
-                    'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)
+                    'saveState': False,
+                    'graderValue': True,
+                    'graderState': None,
                 }
-                for grader_name, grader_value in active_graders.items()
             }
 
         return json.dumps(self.cumulative_score)
