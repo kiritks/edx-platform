@@ -74,8 +74,8 @@ class TestVideoScoring(BaseTestXmodule):
         self.assertDictEqual(
             json.loads(self.item.graders()),
             {
-                u'scored_on_end': {u'graderStatus': False, u'graderValue': True},
-                u'scored_on_percent': {u'graderStatus': False, u'graderValue': 75}
+                u'scored_on_end': {u'isScored': False, u'graderValue': True},
+                u'scored_on_percent': {u'isScored': False, u'graderValue': 75}
             }
         )
 

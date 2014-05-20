@@ -779,36 +779,36 @@ class TestVideoGradeHandler(TestVideo):
         request = Request.blank('', POST={'graderName': 'unknown_grader'})
         response = self.item.grade_handler(request=request, dispatch='')
         self.assertEqual(response.status, '400 Bad Request')
-       
+
     def test_grader(self):
         self.item.runtime.get_real_user = Mock()
         self.item.runtime.publish = Mock()
 
         first_grader = 'scored_on_end'
-        self.assertFalse(self.item.cumulative_score[first_grader]['graderStatus'])
+        self.assertFalse(self.item.cumulative_score[first_grader]['isScored'])
         request = Request.blank('', POST={'graderName': first_grader})
         response = self.item.grade_handler(request=request, dispatch='')
-        self.assertTrue(self.item.cumulative_score[first_grader]['graderStatus'])
+        self.assertTrue(self.item.cumulative_score[first_grader]['isScored'])
         self.assertEqual(response.status_code, 200)
 
         second_grader = 'scored_on_percent'
-        self.assertFalse(self.item.cumulative_score[second_grader]['graderStatus'])
+        self.assertFalse(self.item.cumulative_score[second_grader]['isScored'])
         request = Request.blank('', POST={'graderName': second_grader})
         response = self.item.grade_handler(request=request, dispatch='')
-        self.assertTrue(self.item.cumulative_score[second_grader]['graderStatus'])
+        self.assertTrue(self.item.cumulative_score[second_grader]['isScored'])
         self.assertEqual(response.status_code, 200)
 
     def test_no_real_user(self):
         self.item.runtime.get_real_user = Mock(return_value=None)
-        self.item.cumulative_score['scored_on_end']['graderStatus'] = True
+        self.item.cumulative_score['scored_on_end']['isScored'] = True
         request = Request.blank('', POST={'graderName': 'scored_on_percent'})
         response = self.item.grade_handler(request=request, dispatch='')
         self.assertEqual(response.status_code, 500)
 
     def test_grader_in_studio(self):
         self.item.runtime.get_real_user = None
-        self.item.cumulative_score['scored_on_end']['graderStatus'] = True
+        self.item.cumulative_score['scored_on_end']['isScored'] = True
         request = Request.blank('', POST={'graderName': 'scored_on_percent'})
         response = self.item.grade_handler(request=request, dispatch='')
-        self.assertFalse(self.item.cumulative_score['scored_on_percent']['graderStatus'])
+        self.assertFalse(self.item.cumulative_score['scored_on_percent']['isScored'])
         self.assertEqual(response.status_code, 501)  # NotImplemented

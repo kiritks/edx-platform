@@ -329,15 +329,15 @@ class VideoStudentViewHandlers(object):
             return Response(status=400)
 
         if not all(
-            [values['graderStatus'] for name, values in self.cumulative_score.items() if name != grader_name]
+            [values['isScored'] for name, values in self.cumulative_score.items() if name != grader_name]
         ):
-            self.cumulative_score[grader_name]['graderStatus'] = True
+            self.cumulative_score[grader_name]['isScored'] = True
             return Response(json.dumps(self.module_score), status=200)
 
         if not(self.module_score and self.module_score == self.max_score()):
             try:
                 self.update_score(self.max_score())
-                self.cumulative_score[grader_name]['graderStatus'] = True
+                self.cumulative_score[grader_name]['isScored'] = True
             except NotImplementedError:
                 if getattr(self.system, 'is_author_mode', False):
                     return Response(json.dumps(self.module_score), status=200)

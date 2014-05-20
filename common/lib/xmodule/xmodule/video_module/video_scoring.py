@@ -52,15 +52,21 @@ class VideoScoringMixin(object):
 
         Fields that start with 'scored' are counted as possible graders.
 
-        If grader was added or removed, or it's value was changed,
-        clear self.cumulative_score and clear score in database.
+        If grader was added or removed, or it's value was changed update self.cumulative_score.
 
         Returns:
-            dumped dict of {grader_name: {grader_status: boolean, grader_value: 1}} format,
-            where grader_status is bool, and True if condition for that grader was
-            satisfied.
+            dumped dict of next format:
+                {
+                    grader_name: {
+                        isScored: bool, was grader succeed
+                        saveState: bool, does grade store it's intermediate state in database,
+                        graderState: intermediate state of grader,
+                        graderValue: value of grader, depends of Xfiled type of grader
+                    }
+                }
         """
 
+        # which graders save state
         save_state = ['scored_on_percent']
 
         if self.module_score and self.module_score == self.max_score():  # module have been scored
@@ -75,6 +81,7 @@ class VideoScoringMixin(object):
         graders_updated = sorted(self.cumulative_score) != sorted(active_graders)
         graders_values_changed = False
 
+        # Check if values of graders were updated.
         if not graders_updated:
             for grader_name, grader_dict in self.cumulative_score.items():
                 if grader_dict['graderValue'] != active_graders[grader_name]:
@@ -84,7 +91,7 @@ class VideoScoringMixin(object):
         if graders_updated or graders_values_changed:
             self.cumulative_score = {
                 grader_name: {
-                    'graderStatus': False,
+                    'isScored': self.cumulative_score.get(grader_name, {}).get('isScored', False)
                     'saveState': grader_name in save_state,
                     'graderValue': grader_value,
                     'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)
