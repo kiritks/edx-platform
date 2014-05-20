@@ -54,10 +54,15 @@ function() {
             this.element = element;
             this.state = state;
             this.config = config;
+            this.storage = this.state.storage;
             this.url = this.state.config.gradeUrl;
             this.grader = this.getGrader(this.element, this.state, this.config);
+            this.promise = this.sendGradeOnSuccess(this.grader);
+        },
 
-            return this.sendGradeOnSuccess(this.grader);
+        /** Returns grader name. */
+        getName: function () {
+            return this.name;
         },
 
         /**
@@ -80,11 +85,19 @@ function() {
             return $.ajaxWithPrefix({
                 url: this.url,
                 data: {
-                    'graderName': this.name
+                    'graderName': this.getName()
                 },
                 type: 'POST',
                 notifyOnError: false
             });
+        },
+
+        /**
+         * Returns promise for the grader.
+         * @return {jquery Promise}
+         */
+        getPromise: function () {
+            return this.promise;
         },
 
         /**
@@ -93,6 +106,15 @@ function() {
          */
         sendGradeOnSuccess: function (grader) {
             return grader.pipe(this.sendGrade.bind(this));
+        },
+
+        /**
+         * Returns current grader progress object.
+         * @return {Object} The object with key equals grader name and
+         * value equals current state of the grader.
+         */
+        getState: function () {
+            return null;
         },
 
         /**

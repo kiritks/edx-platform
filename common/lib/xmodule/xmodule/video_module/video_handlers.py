@@ -39,19 +39,32 @@ class VideoStudentViewHandlers(object):
     Handlers for video module instance.
     """
 
+    def cumulative_score_save_action(self, values):
+        cumulative_score = dict(self.cumulative_score)
+        for grader_name, status in values.items():
+            cumulative_score[grader_name]['graderState'] = status
+
+        return cumulative_score
+
     def handle_ajax(self, dispatch, data):
         """
         Update values of xfields, that were changed by student.
         """
         accepted_keys = [
             'speed', 'saved_video_position', 'transcript_language',
-            'transcript_download_format', 'youtube_is_available'
+            'transcript_download_format', 'youtube_is_available',
+            'cumulative_score',
         ]
 
         conversions = {
+            'cumulative_score': json.loads,
             'speed': json.loads,
             'saved_video_position': RelativeTime.isotime_to_timedelta,
             'youtube_is_available': json.loads,
+        }
+
+        save_actions = {
+            'cumulative_score': self.cumulative_score_save_action,
         }
 
         if dispatch == 'save_user_state':
@@ -62,7 +75,10 @@ class VideoStudentViewHandlers(object):
                     else:
                         value = data[key]
 
-                    setattr(self, key, value)
+                    if key in save_actions:
+                        setattr(self, key, save_actions[key](value))
+                    else:
+                        setattr(self, key, value)
 
                     if key == 'speed':
                         self.global_speed = self.speed
@@ -244,7 +260,7 @@ class VideoStudentViewHandlers(object):
 
             try:
                 transcript = self.translation(request.GET.get('videoId', None))
-            except NotFoundError, ex:
+            except NotFoundError as ex:
                 log.info(ex.message)
                 # Try to return static URL redirection as last resort
                 # if no translation is required

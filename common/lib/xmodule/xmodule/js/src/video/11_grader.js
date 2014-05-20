@@ -19,6 +19,7 @@ function(GraderCollection) {
         }
 
         this.state = state;
+        this.state.videoGrader = this;
         this.initialize(state, i18n);
 
         return $.Deferred().resolve().promise();
@@ -45,7 +46,7 @@ function(GraderCollection) {
                 );
             } else {
                 this.graders = this.getGraders(this.el, this.state);
-                $.when.apply(this, this.graders)
+                $.when.apply(this, this.getPromises(this.graders))
                     .done(this.onSuccess.bind(this))
                     .fail(this.onError.bind(this));
             }
@@ -61,6 +62,16 @@ function(GraderCollection) {
          */
         getGraders: function (element, state) {
             return new GraderCollection(element, state);
+        },
+
+        /**
+         * Returns list of grader promises.
+         * @return {Array} List of promises.
+         */
+        getPromises: function (graders) {
+            return $.map(graders, function (grader) {
+                return grader.getPromise();
+            });
         },
 
         /**
@@ -156,7 +167,29 @@ function(GraderCollection) {
 
             this.updateStatusText(msg, 'error');
             this.el.addClass('is-error');
-        }
+        },
+
+        getStates: function () {
+            var gradersForSave = [];
+
+            return function () {
+                var states = {};
+
+                if (this.graders.length) {
+                    if (!gradersForSave.length) {
+                        gradersForSave = this.graders.filter(function (grader) {
+                            return grader.config.saveState;
+                        });
+                    }
+
+                    $.each(gradersForSave, function(index, grader) {
+                        states[grader.getName()] = grader.getState();
+                    });
+                }
+
+                return states;
+            };
+        }()
     };
 
     return Grader;

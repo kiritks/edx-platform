@@ -88,50 +88,70 @@ function (AbstractGrader) {
             return _.compact(timeline).length * this.coef;
         },
 
-        createTimeline: function (size) {
-            // Adds 1 to avoid collisions with interval 0-1.
-            return new Array(++size);
+        createTimeline: function () {
+            return [];
+        },
+
+        getTimeline: function (size) {
+            var current = this.timeline,
+                storedOnServer = this.config.graderState,
+                storedLocally = this.storage.getItem('cumulative_score', true),
+                timeline = current || storedLocally || storedOnServer || [];
+
+            if (!size) {
+                size = this.size;
+            }
+
+            return timeline.length && size === this.size ?
+                timeline :
+                this.createTimeline();
         },
 
         onPlayHandler: function (event) {
             setTimeout(function () {
-                var milliseconds, waitTime;
+                var interval, waitTime;
 
                 this.range = this.getStartEndTimes();
-                milliseconds = 1000 * this.range.size;
-                waitTime = Math.max(milliseconds/100, 1000);
+                interval = 1000 * this.range.size;
+                // event `progress` triggers with interval 200 ms.
+                waitTime = Math.max(interval/this.size, 200);
 
-                // In case, when video less than 20 seconds, we receive less
-                // than 100 events `progress`(it triggers with interval 200 ms).
-                // So, we adjust some settings to make it works well.
-                // `this.size` will be equal amount of received events.
-                if (milliseconds/waitTime < 100) {
-                    this.size = milliseconds/waitTime;
+                // We're going to receive 1-2 events `progress` for each
+                // timeline position for the small videos to be more precise and
+                // to avoid some issues with invoking of timers.
+                if (waitTime <= 500) {
+                    this.size = interval / 500;
                     this.coef = 100 / this.size;
                 }
 
-                this.timeline = this.createTimeline(this.size);
+                this.timeline = this.getTimeline(this.size);
 
                 this.element.on(
                     'progress',
                     _.throttle(
                         this.onProgressHandler.bind(this), waitTime,
-                        { leading: false, trailing: true }
+                        { leading: true, trailing: true }
                     )
                 );
             }.bind(this), 0);
         },
 
         onProgressHandler: function (event, time) {
-            time = Math.floor(time);
-            if (this.range.start <= time && time <= this.range.end) {
-                var position = Math.floor(this.size * time/this.range.size);
+            var seconds = Math.floor(time);
+            if (this.range.start <= seconds && seconds <= this.range.end) {
+                var position = Math.floor(
+                    (time - this.range.start) * this.size / this.range.size
+                );
 
                 this.timeline[position] = 1;
                 if (this.getProgress(this.timeline) >= this.graderValue) {
                     this.dfd.resolve();
                 }
             }
+        },
+
+        getState: function () {
+            return this.getTimeline();
         }
     });
 

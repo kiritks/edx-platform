@@ -772,11 +772,18 @@ function (VideoPlayer, VideoStorage, i18n) {
     }
 
     function saveState(async, data) {
+        var state;
 
         if (!($.isPlainObject(data))) {
             data = {
                 saved_video_position: this.videoPlayer.currentTime
             };
+        }
+
+        if (this.videoGrader) {
+            state = JSON.stringify(this.videoGrader.getStates());
+            data['cumulative_score'] = state;
+            this.storage.setItem('cumulative_score', state, true);
         }
 
         if (data.speed) {
@@ -792,6 +799,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         $.ajax({
             url: this.config.saveStateUrl,
             type: 'POST',
+            notifyOnError: false,
             async: async ? true : false,
             dataType: 'json',
             data: data,

@@ -61,6 +61,8 @@ class VideoScoringMixin(object):
             satisfied.
         """
 
+        save_satate = ['scored_on_percent'];
+
         if self.module_score and self.module_score == self.max_score():  # module have been scored
             return json.dumps({})
 
@@ -81,7 +83,7 @@ class VideoScoringMixin(object):
 
         if graders_updated or graders_values_changed:
             self.cumulative_score = {
-                grader_name: {'graderStatus': False, 'graderValue': grader_value}
+                grader_name: {'graderStatus': False, 'saveState': (grader_name in save_satate), 'graderValue': grader_value, 'graderState': self.cumulative_score.get(grader_name, {}).get('graderState', None)}
                 for grader_name, grader_value in active_graders.items()
             }
 
