@@ -327,6 +327,11 @@ class VideoDescriptor(VideoFields, VideoStudioViewHandlers, TabsEditingDescripto
             'sub': self.sub,
             'download_track': json.dumps(self.download_track),
             'download_video': json.dumps(self.download_video),
+            'grade_videos': json.dumps(self.grade_videos),
+            'has_score': json.dumps(self.has_score),
+            'scored_on_end': json.dumps(self.scored_on_end),
+            'weight': self.weight,
+            'scored_on_percent': self.scored_on_percent,
         }
         for key, value in attrs.items():
             # Mild workaround to ensure that tests pass -- if a field
