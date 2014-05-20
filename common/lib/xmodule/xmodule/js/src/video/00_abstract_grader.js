@@ -48,6 +48,7 @@ function() {
     AbstractGrader.prototype = {
         /** Grader name on backend */
         name: '',
+        range: {},
 
         /** Initializes the module. */
         initialize: function (element, state, config) {
@@ -122,45 +123,36 @@ function() {
          * @return {Object} Contains start, end times and size of the interval.
          */
         getStartEndTimes: function () {
-            var storage = {
-                duration: null,
-                range: null
+            var startTime = this.state.config.startTime,
+                endTime = this.state.config.endTime,
+                duration = this.state.videoPlayer.duration();
+
+            if (this.range && duration === this.range.duration) {
+                return this.range;
+            }
+
+            if (startTime >= duration) {
+                startTime = 0;
+            }
+
+            if (endTime <= startTime || endTime >= duration) {
+                endTime = duration;
+            }
+
+            if (this.state.isFlashMode()) {
+                startTime /= Number(this.state.speed);
+                endTime /= Number(this.state.speed);
+            }
+
+            this.range = {
+                start: startTime,
+                end: endTime,
+                size: endTime - startTime,
+                duration: duration
             };
 
-            return function () {
-                var startTime = this.state.config.startTime,
-                    endTime = this.state.config.endTime,
-                    duration = this.state.videoPlayer.duration();
-
-                if (duration === storage.duration && storage.range) {
-                    return storage.range;
-                } else {
-                    storage.duration = duration;
-                }
-
-                if (startTime >= duration) {
-                    startTime = 0;
-                }
-
-                if (endTime <= startTime || endTime >= duration) {
-                    endTime = duration;
-                }
-
-                if (this.state.isFlashMode()) {
-                    startTime /= Number(this.state.speed);
-                    endTime /= Number(this.state.speed);
-                }
-
-                storage.range = {
-                    start: startTime,
-                    end: endTime,
-                    size: endTime - startTime,
-                    duration: duration
-                };
-
-                return storage.range;
-            };
-        }()
+            return this.range;
+        }
     };
 
     return AbstractGrader;

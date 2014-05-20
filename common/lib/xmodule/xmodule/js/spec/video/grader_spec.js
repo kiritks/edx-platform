@@ -165,7 +165,6 @@ describe('VideoGrader', function () {
             beforeEach(function () {
                 state.config.startTime = 10;
                 state.config.endTime = 20;
-                state.videoPlayer.duration.andReturn(50);
                 new Grader(state, i18n);
             });
 
@@ -248,7 +247,6 @@ describe('VideoGrader', function () {
         });
 
         it('shows success message immediately if percent equal 0', function () {
-            state.videoPlayer.duration.andReturn(100);
             state.config.graders.scored_on_percent.graderValue = 0;
             new Grader(state, i18n);
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
@@ -307,14 +305,13 @@ describe('VideoGrader', function () {
                 var actual;
 
                 state.config.startTime = 100;
-                state.videoPlayer.duration.andReturn(50);
                 this.grader = new AbstractGrader(state.el, state, config);
                 actual = this.grader.getStartEndTimes();
                 expect(actual).toEqual({
                     start: 0,
-                    end: 50,
-                    size: 50,
-                    duration: 50
+                    end: 100,
+                    size: 100,
+                    duration: 100
                 });
             });
 
@@ -323,15 +320,14 @@ describe('VideoGrader', function () {
 
                 state.config.startTime = 10;
                 state.speed = 2;
-                state.videoPlayer.duration.andReturn(200);
                 state.isFlashMode.andReturn(true);
                 this.grader = new AbstractGrader(state.el, state, config);
                 actual = this.grader.getStartEndTimes();
                 expect(actual).toEqual({
                     start: 5,
-                    end: 100,
-                    size: 95,
-                    duration: 200
+                    end: 50,
+                    size: 45,
+                    duration: 100
                 });
             });
         });
@@ -355,14 +351,13 @@ describe('VideoGrader', function () {
                 var actual;
 
                 state.config.endTime = 100;
-                state.videoPlayer.duration.andReturn(50);
                 this.grader = new AbstractGrader(state.el, state, config);
                 actual = this.grader.getStartEndTimes();
                 expect(actual).toEqual({
                     start: 0,
-                    end: 50,
-                    size: 50,
-                    duration: 50
+                    end: 100,
+                    size: 100,
+                    duration: 100
                 });
             });
 
@@ -386,7 +381,6 @@ describe('VideoGrader', function () {
 
                 state.config.endTime = 10;
                 state.speed = 2;
-                state.videoPlayer.duration.andReturn(200);
                 state.isFlashMode.andReturn(true);
                 this.grader = new AbstractGrader(state.el, state, config);
                 actual = this.grader.getStartEndTimes()
@@ -395,7 +389,7 @@ describe('VideoGrader', function () {
                     start: 0,
                     end: 5,
                     size: 5,
-                    duration: 200
+                    duration: 100
                 });
             });
         });
