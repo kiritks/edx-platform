@@ -43,16 +43,10 @@ def index(request):
 
     domain = request.META.get('HTTP_HOST')
 
-    # To load edge template in tests.
-    load_edge = request.GET.get("edge")
-
     # keep specialized logic for Edge until we can migrate over Edge to fully use
     # microsite definitions
-    if (domain and 'edge.edx.org' in domain) or load_edge:
-        context = {
-            'suppress_toplevel_navigation': True
-        }
-        return render_to_response('university_profile/edge.html', context)
+    if domain and 'edge.edx.org' in domain:
+        return redirect(reverse("signin_user"))
 
     #  we do not expect this case to be reached in cases where
     #  marketing and edge are enabled
