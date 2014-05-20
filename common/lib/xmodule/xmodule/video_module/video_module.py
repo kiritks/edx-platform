@@ -31,7 +31,8 @@ from xmodule.editing_module import TabsEditingDescriptor
 from xmodule.raw_module import EmptyDataRawDescriptor
 from xmodule.xml_module import is_pointer_tag, name_to_pathname, deserialize_field
 
-from .video_utils import create_youtube_string
+
+from .video_utils import create_youtube_string, get_course_for_item
 from .video_xfields import VideoFields
 from .video_handlers import VideoStudentViewHandlers, VideoStudioViewHandlers
 from .video_scoring import VideoScoringMixin
@@ -140,7 +141,6 @@ class VideoModule(VideoFields, VideoScoringMixin, VideoStudentViewHandlers, XMod
 
         # OrderedDict for easy testing of rendered context in tests
         sorted_languages = OrderedDict(sorted(languages.items(), key=itemgetter(1)))
-
         return self.system.render_template('video.html', {
             'ajax_url': self.system.ajax_url + '/save_user_state',
             'autoplay': settings.FEATURES.get('AUTOPLAY_VIDEOS', False),
@@ -266,7 +266,10 @@ class VideoDescriptor(VideoFields, VideoStudioViewHandlers, TabsEditingDescripto
 
         editable_fields.pop('grade_videos')
 
-        if not self.grade_videos:
+        # Inheritance does not work for video player descriptor
+        # that's why we obtain grade_videos value from course itself.
+        # Should be fixed when used outside of Studio.
+        if not get_course_for_item(self).grade_videos:
             for field_name in ['has_score', 'scored_on_end', 'scored_on_percent', 'weight']:
                 editable_fields.pop(field_name)
 
