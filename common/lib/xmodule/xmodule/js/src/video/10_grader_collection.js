@@ -143,6 +143,7 @@ function (AbstractGrader) {
 
         onProgressHandler: function (event, time) {
             var seconds = Math.floor(time);
+
             if (this.range.start <= seconds && seconds <= this.range.end) {
                 var position = Math.floor(
                     (time - this.range.start) * this.size / this.range.size
