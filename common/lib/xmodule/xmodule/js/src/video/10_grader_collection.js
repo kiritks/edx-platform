@@ -20,7 +20,8 @@ function (AbstractGrader) {
         var hasScore = state.config.hasScore,
             graders = state.config.graders,
             conversions = {
-                'scored_on_end': 'GradeOnEnd',
+                'basic_grader': 'BasicGrader',
+                'scored_on_percent': 'GradeOnPercent'
                 'scored_on_percent': 'GradeOnPercent'
             };
 
@@ -28,7 +29,7 @@ function (AbstractGrader) {
             var graderName = conversions[name],
                 Grader = GraderCollection[graderName];
 
-            if (Grader && !config.graderStatus) {
+            if (Grader && !config.isScored) {
                 return new Grader(element, state, config);
             }
         });
@@ -36,15 +37,32 @@ function (AbstractGrader) {
 
     /** Write graders below this line **/
 
+    GraderCollection.BasicGrader = AbstractGrader.extend({
+        name: 'basic_grader',
+
+        getGrader: function (element) {
+            var downloadButton =  this.state.el.find('.video-download-button');
+
+            this.dfd = $.Deferred();
+            element.on('play', this.dfd.resolve);
+            downloadButton.on('click', this.dfd.resolve);
+
+            return this.dfd.promise();
+        }
+    });
+
     GraderCollection.GradeOnEnd = AbstractGrader.extend({
         name: 'scored_on_end',
 
         getGrader: function (element) {
+            var downloadButton =  this.state.el.find('.video-download-button');
+
             this.dfd = $.Deferred();
             element.on({
                 'seek': this.onSeekHandler.bind(this),
                 'play': _.once(this.onPlayHandler.bind(this))
             });
+            downloadButton.on('click', this.dfd.resolve);
 
             return this.dfd.promise();
         },
