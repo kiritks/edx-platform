@@ -23,7 +23,8 @@ describe('VideoGrader', function () {
                 duration: jasmine.createSpy().andReturn(100)
             },
             storage: {
-                setItem: jasmine.createSpy()
+                setItem: jasmine.createSpy(),
+                getItem: jasmine.createSpy(),
             },
             config: {
                 hasScore: true,
@@ -33,8 +34,16 @@ describe('VideoGrader', function () {
                 score: null,
                 gradeUrl: '/grade_url',
                 graders: {
-                    scored_on_end: {graderStatus: false, graderValue: true},
-                    scored_on_percent: {graderStatus: false, graderValue: 2}
+                    scored_on_end: {
+                        graderStatus: false,
+                        graderValue: true,
+                        saveState: false
+                    },
+                    scored_on_percent: {
+                        graderStatus: false,
+                        graderValue: 2,
+                        saveState: true
+                    }
                 }
             },
             isFlashMode: jasmine.createSpy().andReturn(false)
@@ -72,6 +81,7 @@ describe('VideoGrader', function () {
     describe('Status bar', function () {
         beforeEach(function () {
             state.config.graders.scored_on_percent.graderStatus = true;
+            jasmine.Clock.useMock();
         });
 
         it('shows success message', function () {
@@ -81,6 +91,8 @@ describe('VideoGrader', function () {
             expect($('.problem-feedback').length).toBe(0);
 
             jasmine.stubRequests();
+            state.el.trigger('play');
+            jasmine.Clock.tick(10);
             state.el.trigger('ended');
 
             expect(state.progressElement.text()).toBe(SCORED_TEXT);
@@ -97,6 +109,8 @@ describe('VideoGrader', function () {
                 expect(state.progressElement.text()).toBe(POSSIBLE_SCORES);
                 expect($('.problem-feedback').length).toBe(0);
 
+                state.el.trigger('play');
+                jasmine.Clock.tick(10);
                 state.el.trigger('ended');
             });
 
@@ -114,20 +128,68 @@ describe('VideoGrader', function () {
 
     describe('GradeOnEnd', function () {
         beforeEach(function () {
+            jasmine.Clock.useMock();
             state.config.graders.scored_on_percent.graderStatus = true;
             jasmine.stubRequests();
-            new Grader(state, i18n);
-            state.el.trigger('ended');
         });
 
-        it('updates status message when done', function () {
-            expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+        describe('ended', function () {
+            beforeEach(function () {
+                new Grader(state, i18n);
+            });
+
+            it('updates status message when done', function () {
+                state.el.trigger('play');
+                jasmine.Clock.tick(10);
+                state.el.trigger('ended');
+                expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            });
+
+            it('updates just once', function () {
+                state.el.trigger('play');
+                jasmine.Clock.tick(10);
+                state.el.trigger('ended');
+                state.el.trigger('ended');
+                state.el.trigger('ended');
+                expect(state.storage.setItem.calls.length).toBe(1);
+            });
+
+            it('updates status message when seek at the end', function () {
+                state.el.trigger('seek', [100]);
+                jasmine.Clock.tick(10);
+                expect(state.storage.setItem.calls.length).toBe(1);
+            });
         });
 
-        it('updates just once', function () {
-            state.el.trigger('ended');
-            state.el.trigger('ended');
-            expect(state.storage.setItem.calls.length).toBe(1);
+        describe('endTime', function () {
+            beforeEach(function () {
+                state.config.startTime = 10;
+                state.config.endTime = 20;
+                state.videoPlayer.duration.andReturn(50);
+                new Grader(state, i18n);
+            });
+
+            it('updates status message when done', function () {
+                state.el.trigger('play');
+                jasmine.Clock.tick(10);
+                state.el.trigger('endTime');
+                expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            });
+
+            it('updates just once', function () {
+                state.el.trigger('play');
+                jasmine.Clock.tick(10);
+                state.el.trigger('endTime');
+                state.el.trigger('endTime');
+                state.el.trigger('endTime');
+                expect(state.storage.setItem.calls.length).toBe(1);
+            });
+
+            it('updates status message when seek at the end', function () {
+                state.el.trigger('seek', [20.5]);
+                jasmine.Clock.tick(10);
+                expect(state.storage.setItem.calls.length).toBe(1);
+            });
         });
     });
 
@@ -137,7 +199,19 @@ describe('VideoGrader', function () {
             jasmine.stubRequests();
             spyOn(_, 'throttle').andCallFake(function(f){ return f; }) ;
             jasmine.Clock.useMock();
+            this.addMatchers({
+                assertState: function (expected) {
+                    var actual = this.actual.getStates();
+                    return this.env.equals_(actual, expected);
+                }
+            });
         });
+
+        var createStateList = function (len, val) {
+            return $.map(_.range(len), function () {
+                return val;
+            });
+        }
 
         it('shows success message', function () {
             new Grader(state, i18n);
@@ -152,20 +226,25 @@ describe('VideoGrader', function () {
             expect($('.problem-feedback').length).toBe(0);
             state.el.trigger('progress', [2.1]);
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            expect(state.videoGrader).assertState({
+                'scored_on_percent': createStateList(3, 1)
+            });
         });
 
         it('shows success message if percent equal 100', function () {
-            state.videoPlayer.duration.andReturn(100);
             state.config.graders.scored_on_percent.graderValue = 100;
             new Grader(state, i18n);
             state.el.trigger('play');
             jasmine.Clock.tick(10);
 
-            for (var i = 0, k = 0; i <= 100; i++, k += 1) {
-                state.el.trigger('progress', [k]);
-            }
+            $.each(_.range(202), function(index, val) {
+                state.el.trigger('progress', [0.5 * index]);
+            });
 
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            expect(state.videoGrader).assertState({
+                'scored_on_percent': createStateList(101, 1)
+            });
         });
 
         it('shows success message immediately if percent equal 0', function () {
@@ -173,6 +252,9 @@ describe('VideoGrader', function () {
             state.config.graders.scored_on_percent.graderValue = 0;
             new Grader(state, i18n);
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            expect(state.videoGrader).assertState({
+                'scored_on_percent': []
+            });
         });
 
         it('shows success message if duration is less than 20s', function () {
@@ -187,7 +269,11 @@ describe('VideoGrader', function () {
             }
 
             expect($('.problem-feedback').text()).toBe(SUCCESS_MESSAGE);
+            expect(state.videoGrader).assertState({
+                'scored_on_percent': createStateList(3, 1)
+            });
         });
+
     });
 
     describe('getStartEndTimes', function () {
@@ -202,10 +288,6 @@ describe('VideoGrader', function () {
             spyOn(AbstractGrader.prototype, 'sendGradeOnSuccess');
         });
 
-        afterEach(function () {
-            delete this.grader;
-        });
-
         describe('startTime', function () {
             it('returns initial value', function () {
                 var actual;
@@ -216,7 +298,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 10,
                     end: 100,
-                    size: 90
+                    size: 90,
+                    duration: 100
                 });
             });
 
@@ -230,7 +313,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 0,
                     end: 50,
-                    size: 50
+                    size: 50,
+                    duration: 50
                 });
             });
 
@@ -246,7 +330,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 5,
                     end: 100,
-                    size: 95
+                    size: 95,
+                    duration: 200
                 });
             });
         });
@@ -261,7 +346,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 0,
                     end: 20,
-                    size: 20
+                    size: 20,
+                    duration: 100
                 });
             });
 
@@ -275,7 +361,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 0,
                     end: 50,
-                    size: 50
+                    size: 50,
+                    duration: 50
                 });
             });
 
@@ -289,7 +376,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 50,
                     end: 100,
-                    size: 50
+                    size: 50,
+                    duration: 100
                 });
             });
 
@@ -306,7 +394,8 @@ describe('VideoGrader', function () {
                 expect(actual).toEqual({
                     start: 0,
                     end: 5,
-                    size: 5
+                    size: 5,
+                    duration: 200
                 });
             });
         });

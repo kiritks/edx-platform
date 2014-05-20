@@ -26,6 +26,8 @@ function(GraderCollection) {
     };
 
     Grader.prototype = {
+        gradersForSave: [],
+
         /** Initializes the module. */
         initialize: function (state, i18n) {
             this.state = state;
@@ -170,26 +172,22 @@ function(GraderCollection) {
         },
 
         getStates: function () {
-            var gradersForSave = [];
+            var states = {};
 
-            return function () {
-                var states = {};
-
-                if (this.graders.length) {
-                    if (!gradersForSave.length) {
-                        gradersForSave = this.graders.filter(function (grader) {
-                            return grader.config.saveState;
-                        });
-                    }
-
-                    $.each(gradersForSave, function(index, grader) {
-                        states[grader.getName()] = grader.getState();
+            if (this.graders.length) {
+                if (!this.gradersForSave.length) {
+                    this.gradersForSave = this.graders.filter(function (grader) {
+                        return grader.config.saveState;
                     });
                 }
 
-                return states;
-            };
-        }()
+                $.each(this.gradersForSave, function(index, grader) {
+                    states[grader.getName()] = grader.getState();
+                });
+            }
+
+            return states;
+        }
     };
 
     return Grader;
