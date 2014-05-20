@@ -18,7 +18,8 @@ VIDEO_BUTTONS = {
     'pause': '.video_control.pause',
     'fullscreen': '.add-fullscreen',
     'download_transcript': '.video-tracks > a',
-    'speed': '.speeds'
+    'speed': '.speeds',
+    'download_video': '.video-download-button',
 }
 
 CSS_CLASS_NAMES = {
@@ -34,19 +35,19 @@ CSS_CLASS_NAMES = {
     'video_init': '.is-initialized',
     'video_time': 'div.vidtime',
     'video_display_name': '.vert h2',
-    'captions_lang_list': '.langs-list li'
+    'captions_lang_list': '.langs-list li',
 }
 
 VIDEO_MODES = {
     'html5': 'div.video video',
-    'youtube': 'div.video iframe'
+    'youtube': 'div.video iframe',
 }
 
 VIDEO_MENUS = {
     'language': '.lang .menu',
     'speed': '.speed .menu',
     'download_transcript': '.video-tracks .a11y-menu-list',
-    'transcript-format': '.video-tracks .a11y-menu-button'
+    'transcript-format': '.video-tracks .a11y-menu-button',
 }
 
 

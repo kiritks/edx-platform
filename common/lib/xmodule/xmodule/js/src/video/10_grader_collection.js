@@ -43,6 +43,7 @@ function (AbstractGrader) {
         getGrader: function (element) {
             var downloadButton =  this.state.el.find('.video-download-button'),
                 dfd = $.Deferred();
+
             element.on('play', dfd.resolve);
             downloadButton.on('click', dfd.resolve);
 
