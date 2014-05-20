@@ -154,7 +154,8 @@ function() {
                 storage.range = {
                     start: startTime,
                     end: endTime,
-                    size: endTime - startTime
+                    size: endTime - startTime,
+                    duration: duration
                 };
 
                 return storage.range;

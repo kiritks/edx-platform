@@ -41,28 +41,33 @@ function (AbstractGrader) {
 
         getGrader: function (element) {
             this.dfd = $.Deferred();
-
             element.on({
-                'ended': this.dfd.resolve,
-                'endTime': this.dfd.resolve,
-                'ready': this.updateRange.bind(this),
-                'play': _.once(this.updateRange.bind(this)),
-                'seek': this.onSeekHandler.bind(this)
+                'seek': this.onSeekHandler.bind(this),
+                'play': _.once(this.onPlayHandler.bind(this))
             });
 
             return this.dfd.promise();
         },
 
-        updateRange: function (event, time) {
+        onPlayHandler: function (event, time) {
             setTimeout(function () {
-                this.range = this.getStartEndTimes();
+                var range = this.getStartEndTimes(),
+                    size = range.size,
+                    duration = range.duration,
+                    eventName = (size === duration) ? 'ended' : 'endTime';
+
+                this.element.on(eventName, this.dfd.resolve);
             }.bind(this), 0);
         },
 
         onSeekHandler: function (event, time) {
-            if (time < this.range.start || this.range.end < time) {
-                this.dfd.resolve();
-            }
+            setTimeout(function () {
+                var range = this.getStartEndTimes();
+
+                if (Math.floor(time) === range.end) {
+                    this.dfd.resolve();
+                }
+            }.bind(this), 0);
         }
     });
 
